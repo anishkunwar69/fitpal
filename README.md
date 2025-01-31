@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FitPal - Workout Tracking & Analytics Platform
 
-## Getting Started
+FitPal is a comprehensive workout tracking application that helps fitness enthusiasts monitor their progress, analyze performance, and achieve their fitness goals effectively.
 
-First, run the development server:
+## 🎯 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 1. Workout Program Management
+- Create and manage multiple workout programs
+- Organize exercises by muscle groups
+- Set custom workout schedules with specific days
+- Track sets, reps, and weights for each exercise
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Detailed Exercise Analytics
+- Visual progress tracking with interactive charts
+- Weight progression timeline
+- Performance metrics including:
+  - Average weight per exercise
+  - Total volume lifted
+  - One-rep max (1RM) estimates
+  - Set completion rates
+  - Rest periods between sets
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Historical Data & Reporting
+- View complete exercise history
+- Filter workout data by week/month/year
+- Detailed session reports with performance breakdowns
+- Achievement rate tracking against target goals
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Session Comparison
+- Compare current workout with previous sessions
+- Track improvements in:
+  - Weight progression
+  - Volume changes
+  - Rep performance
+  - Overall strength gains
 
-## Learn More
+### 5. Progress Insights
+- Personalized progress metrics
+- Strength improvement percentages
+- Workout consistency tracking
+- Achievement milestones
 
-To learn more about Next.js, take a look at the following resources:
+## 💪 Why FitPal?
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- *Data-Driven Progress*: Make informed decisions about your training based on comprehensive performance data
+- *Visual Feedback*: Easy-to-understand charts and progress indicators
+- *Motivation Boost*: Track achievements and see tangible progress over time
+- *Structured Approach*: Organize workouts systematically for better adherence
+- *Performance Analysis*: Identify trends and areas for improvement in your training
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Technologies Used
 
-## Deploy on Vercel
+### Frontend
+- Next.js 15 (App Router)
+- TypeScript
+- TailwindCSS
+- Lucide Icons
+- Chart.js with React-Chartjs-2
+- Shadcn UI Components
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### State Management & Data Fetching
+- TanStack Query (React Query)
+- React Hook Form
+- Zod for validation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Development Tools
+- ESLint
+- Prettier
+- PostCSS
+
+
+## 📱 Responsive Design
+
+FitPal is fully responsive and optimized for both desktop and mobile devices, ensuring a seamless experience across all screen sizes.
