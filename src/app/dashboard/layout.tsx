@@ -1,10 +1,10 @@
 "use client";
-import { useUser } from "@clerk/nextjs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { BarChart2, Dumbbell, Menu, X } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function DashboardLayout({
   children,

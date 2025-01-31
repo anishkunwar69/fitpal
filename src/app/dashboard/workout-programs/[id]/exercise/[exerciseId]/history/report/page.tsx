@@ -1,16 +1,16 @@
 'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Loader2, TrendingUp, AlertCircle, RefreshCcw, ArrowLeft } from "lucide-react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
-import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import { useQuery } from "@tanstack/react-query";
+import { AlertCircle, ArrowLeft, Loader2, RefreshCcw, TrendingUp } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 interface ExerciseSet {
   reps: number | null;

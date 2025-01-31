@@ -1,14 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, memo } from "react";
-import {
-  Loader2,
-  TrendingUp,
-  AlertCircle,
-  RefreshCcw,
-  ArrowLeft,
-} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,19 +8,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Loader2,
+  RefreshCcw,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { memo, useMemo } from "react";
+import { Bar } from "react-chartjs-2";
 interface ExerciseSet {
   reps: number | null;
   weight: number | null;

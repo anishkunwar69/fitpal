@@ -1,8 +1,8 @@
 "use client";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query"
+import { memo, useEffect } from "react";
 
 const Background = memo(() => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">

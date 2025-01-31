@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { endOfDay } from "date-fns";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { z } from "zod";
-import { MuscleGroupName, WorkoutDay } from "@prisma/client";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { MuscleGroupName, WorkoutDay } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 const WorkoutProgramSchema = z.object({
   name: z.string().min(1, "Program name is required"),

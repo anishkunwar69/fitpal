@@ -1,11 +1,3 @@
-import React from "react";
-import MaxWidthWrapper from "./max-width-wrapper";
-import { currentUser } from "@clerk/nextjs/server";
-import { SignOutButton } from "@clerk/nextjs";
-import { Button } from "./ui/button";
-import Link from "next/link";
-import { Dumbbell, Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -14,7 +6,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { SignOutButton } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
+import { Dumbbell, LogOut, Menu, User } from "lucide-react";
+import Link from "next/link";
+import MaxWidthWrapper from "./max-width-wrapper";
+import { Button } from "./ui/button";
 
 async function Navbar() {
   const isUserLoggedIn = await currentUser();

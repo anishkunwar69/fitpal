@@ -1,6 +1,6 @@
 "use client";
-import Link from "next/link";
 import { Dumbbell } from "lucide-react";
+import Link from "next/link";
 import { useMemo } from "react";
 
 export default function Dashboard() {

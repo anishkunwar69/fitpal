@@ -1,7 +1,7 @@
-import { isSameDay, parse } from "date-fns";
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { parse } from "date-fns";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest, params: { params: { exerciseId: string, date: string } }) {
   try {

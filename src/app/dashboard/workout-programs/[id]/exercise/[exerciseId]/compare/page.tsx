@@ -2,24 +2,24 @@
 
 import { useQuery } from "@tanstack/react-query";
 import {
-  Loader2,
-  ArrowLeft,
-  AlertCircle,
-  TrendingUp,
-  Scale,
-  Target,
-} from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
-import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Loader2,
+  Scale,
+  Target,
+  TrendingUp,
+} from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { Bar } from "react-chartjs-2";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 

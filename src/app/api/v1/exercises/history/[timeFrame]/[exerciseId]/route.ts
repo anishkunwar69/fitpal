@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import {
   endOfMonth,
   endOfWeek,
@@ -8,7 +8,7 @@ import {
   startOfWeek,
   startOfYear,
 } from "date-fns";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 
 type timeFrameTypes = "week" | "month" | "year";
 
