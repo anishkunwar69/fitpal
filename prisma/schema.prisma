@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int              @id @default(autoincrement())
+  externalId      String?          @unique
+  email           String           @unique
+  apiKey          String           @unique @default(cuid())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  workoutPrograms WorkoutProgram[]
+}
+
+enum MuscleGroupName {
+  CHEST
+  TRICEPS
+  BACK
+  BICEPS
+  SHOULDERS
+  LEGS
+}
+
+enum WorkoutDay {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+enum WeightUnit {
+  KG
+  LBS
+}
+
+model WorkoutProgram {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?
+  workoutDays  WorkoutDay[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  userId       Int
+  user         User          @relation(fields: [userId], references: [id])
+  exercises    Exercise[]
+  muscleGroups MuscleGroup[] @relation("WorkoutProgramToMuscleGroup")
+
+  @@index([userId])
+}
+
+model Exercise {
+  id               Int            @id @default(autoincrement())
+  name             String
+  notes            String?
+  targetSets       Int            @default(3)
+  minReps          Int            
+  maxReps          Int            
+  unit             WeightUnit     @default(KG)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  workoutProgramId Int
+  workoutProgram   WorkoutProgram @relation(fields: [workoutProgramId], references: [id])
+  muscleGroups     MuscleGroup[]  @relation("ExerciseToMuscleGroup")
+  sets             Set[]
+
+  @@index([workoutProgramId])
+}
+
+model Set {
+  id         Int        @id @default(autoincrement())
+  weight     Float?     // Weight in kg/lbs
+  reps       Int?       // Actual reps performed
+  validUpto  DateTime
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  exercise   Exercise   @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
+
+  @@index([exerciseId])
+}
+
+model MuscleGroup {
+  id              Int              @id @default(autoincrement())
+  name            MuscleGroupName  
+  exercises       Exercise[]       @relation("ExerciseToMuscleGroup")
+  workoutPrograms WorkoutProgram[] @relation("WorkoutProgramToMuscleGroup")
+}
