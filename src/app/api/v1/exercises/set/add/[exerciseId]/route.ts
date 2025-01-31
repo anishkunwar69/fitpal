@@ -41,7 +41,6 @@ export async function POST(
       );
     }
 
-    // Verify exercise belongs to user and check set count
     const exercise = await prisma.exercise.findFirst({
       where: {
         id: Number(exerciseId),
@@ -72,7 +71,6 @@ export async function POST(
       );
     }
 
-    // Create new set
     const newSet = await prisma.set.create({
       data: {
         weight: body.weight,

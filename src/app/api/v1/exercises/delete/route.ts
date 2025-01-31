@@ -49,16 +49,13 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Wrap deletions in a transaction
     const deletedExercise = await prisma.$transaction(async (tx) => {
-      // Delete all associated sets first
       await tx.set.deleteMany({
         where: {
           exerciseId: Number(exerciseId),
         },
       });
 
-      // Delete the exercise
       return tx.exercise.delete({
         where: {
           id: Number(exerciseId),

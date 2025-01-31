@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 
 type TimeFrame = 'week' | 'month' | 'year';
 
+
 interface ExerciseHistoryData {
   date: string;
   totalSets: number;

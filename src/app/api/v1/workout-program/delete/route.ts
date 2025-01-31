@@ -33,9 +33,7 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Wrap all deletions in a transaction
     const deletedWorkoutProgram = await prisma.$transaction(async (tx) => {
-      // First delete all sets associated with exercises in this workout program
       await tx.set.deleteMany({
         where: {
           exercise: {
@@ -44,14 +42,12 @@ export async function DELETE(req: NextRequest) {
         }
       });
 
-      // Then delete all exercises in this workout program
       await tx.exercise.deleteMany({
         where: {
           workoutProgramId: Number(workoutProgramId)
         }
       });
 
-      // Finally delete the workout program itself
       return tx.workoutProgram.delete({
         where: {
           userId: user.id,

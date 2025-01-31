@@ -82,7 +82,7 @@ export async function GET(
           exerciseId: Number(exerciseId),
           createdAt: {
             gte: startOfYear(currentDate),
-            lte: endOfYear(currentDate), // Fixed: was using startOfMonth instead of endOfYear
+            lte: endOfYear(currentDate),
           },
         },
         include: {

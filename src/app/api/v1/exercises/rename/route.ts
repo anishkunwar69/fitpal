@@ -3,7 +3,6 @@ import prisma from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { z } from "zod";
 
-// Validation schema for the request body
 const updateExerciseSchema = z.object({
   newExerciseName: z.string().min(1, "Exercise name is required"),
   exerciseId: z.number().positive("Invalid exercise ID"),
@@ -32,7 +31,6 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Validate request body
     const body = await req.json();
     const validationResult = updateExerciseSchema.safeParse(body);
 
@@ -49,12 +47,11 @@ export async function PUT(req: NextRequest) {
 
     const { newExerciseName, exerciseId } = validationResult.data;
 
-    // First, get the exercise and its workout program
     const existingExercise = await prisma.exercise.findFirst({
       where: {
         id: exerciseId,
         workoutProgram: {
-          userId: user.id, // Ensure the exercise belongs to a workout program owned by the user
+          userId: user.id,
         },
       },
       include: {
@@ -69,12 +66,11 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Check for duplicate exercise name within the same workout program
     const duplicateExercise = await prisma.exercise.findFirst({
       where: {
         name: newExerciseName,
         workoutProgramId: existingExercise.workoutProgramId,
-        id: { not: exerciseId }, // Exclude current exercise from check
+        id: { not: exerciseId },
       },
     });
 
@@ -88,7 +84,6 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Update the exercise name
     const updatedExercise = await prisma.exercise.update({
       where: {
         id: exerciseId,

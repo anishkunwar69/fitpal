@@ -73,12 +73,10 @@ async function Navbar() {
             </h1>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-3">
             <NavItems />
           </div>
 
-          {/* Mobile Navigation */}
           {isUserLoggedIn ? (
             <div className="md:hidden">
               <DropdownMenu>

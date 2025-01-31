@@ -12,7 +12,6 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 
 type timeFrameTypes = "week" | "month" | "year";
 
-// this api will fetch all the sets related info according to the time frame
 export async function GET(
   request: NextRequest,
   { params }: { params: { timeFrame: timeFrameTypes; exerciseId: string } }
@@ -30,7 +29,6 @@ export async function GET(
     const { timeFrame, exerciseId } = await params;
     const currentDate = new Date();
 
-    // Fetch exercise with minReps and maxReps
     const exercise = await prisma.exercise.findFirst({
       where: {
         id: Number(exerciseId),
@@ -101,7 +99,6 @@ export async function GET(
       );
     }
 
-    // Group sets by date
     const groupedSets = exerciseSetsForTheTimeFrame.reduce((acc: any[], set) => {
       const date = new Date(set.createdAt).toISOString().split('T')[0];
       const existingGroup = acc.find(group => group.date === date);
@@ -117,13 +114,11 @@ export async function GET(
       return acc;
     }, []);
 
-    // Calculate metrics for each group
     const processedData = groupedSets.map(group => {
       const totalSets = group.sets.length;
       const totalReps = group.sets.reduce((sum: number, set: any) => sum + (set.reps || 0), 0);
       const avgWeight = group.sets.reduce((sum: number, set: any) => sum + (set.weight || 0), 0) / totalSets;
       
-      // Calculate target achievement using maxReps
       const targetReps = exercise.maxReps * totalSets;
       const achievementRate = (totalReps / targetReps) * 100;
 

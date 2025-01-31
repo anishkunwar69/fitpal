@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
 
     const validatedData = WorkoutProgramSchema.parse(body);
 
-    // Check for existing workout program with the same name for this user
     const existingProgram = await prisma.workoutProgram.findFirst({
       where: {
         userId: user.id,

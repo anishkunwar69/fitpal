@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 
-// Reuse the same interfaces
 interface ExerciseSet {
   reps: number | null;
   weight: number | null;
@@ -102,8 +101,6 @@ export default function ExerciseHistoryReport() {
             </div>
         );
     }
-
-    // Transform the data for the chart
     const chartData = exercise.data.sets.map((set: ExerciseSet, index: number) => ({
         setNumber: `Set ${index + 1}`,
         actualReps: set.reps || 0,
@@ -115,7 +112,6 @@ export default function ExerciseHistoryReport() {
         createdAt: set.createdAt
     }));
 
-    // Calculate metrics
     const totalReps = chartData.reduce((acc: number, set: { actualReps: number }) => acc + set.actualReps, 0);
     const avgCompletionRate = Math.round(
         (chartData.reduce((acc: number, set: { actualReps: number }) => {
@@ -229,7 +225,6 @@ export default function ExerciseHistoryReport() {
                 </CardFooter>
             </Card>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 <Card className="border-orange-100">
                     <CardHeader className="pb-2">

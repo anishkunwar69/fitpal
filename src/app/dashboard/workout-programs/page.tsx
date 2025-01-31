@@ -169,8 +169,6 @@ const UpdateConfirmationDialog = memo(({
 ));
 
 UpdateConfirmationDialog.displayName = 'UpdateConfirmationDialog';
-
-// Define the validation schema (matching backend)
 const updateWorkoutProgramSchema = z.object({
   newWorkoutProgramName: z.string().min(1, "Workout program name is required").max(30, "Workout program name is too long"),
   workoutProgramId: z.number().positive("Invalid workout program ID"),
@@ -278,7 +276,6 @@ const WorkoutCard = memo(({ workout }: { workout: any }) => {
   const handleUpdateClick = (e: React.MouseEvent) => {
     e.preventDefault();
     
-    // Validate input using Zod
     const validationResult = updateWorkoutProgramSchema.safeParse({
       newWorkoutProgramName: newName,
       workoutProgramId: workout.id
@@ -296,7 +293,6 @@ const WorkoutCard = memo(({ workout }: { workout: any }) => {
   };
 
   const handleConfirmUpdate = () => {
-    // Validate again before mutation
     const validationResult = updateWorkoutProgramSchema.safeParse({
       newWorkoutProgramName: newName,
       workoutProgramId: workout.id
@@ -506,7 +502,7 @@ export default function WorkoutPrograms() {
       }
       return data;
     },
-    staleTime: 30000, // Cache data for 30 seconds
+    staleTime: 30000,
   });
 
   const router = useRouter();

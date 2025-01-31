@@ -30,7 +30,6 @@ export async function GET(
       );
     }
 
-    // Ensure params.id exists and is a valid number
     const workoutId = params?.id;
     if (!workoutId || isNaN(Number(workoutId))) {
       return NextResponse.json(

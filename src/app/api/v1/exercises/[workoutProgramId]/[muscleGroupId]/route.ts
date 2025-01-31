@@ -17,7 +17,6 @@ export async function GET(
       );
     }
 
-    // Find exercises that belong to the workout program AND are associated with the muscle group
     const exercises = await prisma.exercise.findMany({
       where: {
         workoutProgramId: Number(workoutProgramId),
@@ -28,7 +27,7 @@ export async function GET(
         }
       },
       include: {
-        muscleGroups: true // Include the muscle groups in the response
+        muscleGroups: true
       }
     });
     

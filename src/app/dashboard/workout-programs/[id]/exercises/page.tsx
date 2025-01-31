@@ -1,7 +1,16 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ArrowLeft, AlertCircle, RefreshCcw, BarChart, Trash2, Pencil, Plus } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  AlertCircle,
+  RefreshCcw,
+  BarChart,
+  Trash2,
+  Pencil,
+  Plus,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import * as Dialog from '@radix-ui/react-dialog';
+import * as Dialog from "@radix-ui/react-dialog";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -37,17 +46,16 @@ type WorkoutProgram = {
   muscleGroups: MuscleGroup[];
 };
 
-// Add the validation schema
 const updateExerciseSchema = z.object({
   exerciseId: z.number().positive("Invalid exercise ID"),
-  newExerciseName: z.string()
+  newExerciseName: z
+    .string()
     .min(1, "Exercise name is required")
-    .max(30, "Exercise name cannot exceed 30 characters")
+    .max(30, "Exercise name cannot exceed 30 characters"),
 });
 
 type UpdateExerciseSchema = z.infer<typeof updateExerciseSchema>;
 
-// Add this new empty state component
 const EmptyState = ({ workoutId }: { workoutId: string }) => (
   <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
     <div className="bg-orange-50 rounded-full p-6 mb-6">
@@ -78,8 +86,13 @@ const EmptyState = ({ workoutId }: { workoutId: string }) => (
   </div>
 );
 
-// Update the exercise card component
-const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: string }) => {
+const ExerciseCard = ({
+  exercise,
+  workoutId,
+}: {
+  exercise: Exercise;
+  workoutId: string;
+}) => {
   const queryClient = useQueryClient();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -87,17 +100,16 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Reset newName when exercise changes
   useEffect(() => {
     setNewName(exercise.name);
   }, [exercise.name]);
 
   const { mutate: deleteExercise, isPending } = useMutation({
     mutationFn: async (exerciseId: number) => {
-      const response = await fetch('/api/v1/exercises/delete', {
-        method: 'DELETE',
+      const response = await fetch("/api/v1/exercises/delete", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ exerciseId }),
       });
@@ -108,22 +120,25 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
       return data;
     },
     onSuccess: () => {
-      toast.success('Exercise deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['exercises'] });
+      toast.success("Exercise deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["exercises"] });
       setShowDeleteModal(false);
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete exercise');
+      toast.error(error.message || "Failed to delete exercise");
       setShowDeleteModal(false);
     },
   });
 
   const { mutate: renameExercise, isPending: isRenaming } = useMutation({
-    mutationFn: async (data: { exerciseId: number, newExerciseName: string }) => {
-      const response = await fetch('/api/v1/exercises/rename', {
-        method: 'PUT',
+    mutationFn: async (data: {
+      exerciseId: number;
+      newExerciseName: string;
+    }) => {
+      const response = await fetch("/api/v1/exercises/rename", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -134,20 +149,20 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
       return result;
     },
     onSuccess: () => {
-      toast.success('Exercise renamed successfully');
-      queryClient.invalidateQueries({ queryKey: ['exercises'] });
+      toast.success("Exercise renamed successfully");
+      queryClient.invalidateQueries({ queryKey: ["exercises"] });
       setIsEditing(false);
       setShowUpdateModal(false);
       setValidationError(null);
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to rename exercise');
+      toast.error(error.message || "Failed to rename exercise");
       setShowUpdateModal(false);
     },
   });
 
   const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent event bubbling
+    e.preventDefault();
     setShowDeleteModal(true);
   };
 
@@ -163,15 +178,16 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
 
   const handleUpdateClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    
-    // Validate input using Zod
+
     const validationResult = updateExerciseSchema.safeParse({
       exerciseId: exercise.id,
-      newExerciseName: newName
+      newExerciseName: newName,
     });
 
     if (!validationResult.success) {
-      setValidationError(validationResult.error.errors[0]?.message || "Invalid input");
+      setValidationError(
+        validationResult.error.errors[0]?.message || "Invalid input"
+      );
       return;
     }
 
@@ -188,7 +204,7 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
   const handleConfirmUpdate = () => {
     const validationResult = updateExerciseSchema.safeParse({
       exerciseId: exercise.id,
-      newExerciseName: newName.trim()
+      newExerciseName: newName.trim(),
     });
 
     if (!validationResult.success) {
@@ -211,9 +227,9 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
                 value={newName}
                 onChange={handleNameChange}
                 className={`w-full text-base sm:text-lg font-semibold text-gray-900 border-b px-1 py-0.5 ${
-                  validationError 
-                    ? 'border-red-300 focus:border-red-500' 
-                    : 'border-orange-200 focus:border-orange-500'
+                  validationError
+                    ? "border-red-300 focus:border-red-500"
+                    : "border-orange-200 focus:border-orange-500"
                 } focus:outline-none bg-transparent`}
                 autoFocus
               />
@@ -227,9 +243,7 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
             </div>
 
             {validationError && (
-              <p className="text-xs text-red-500 mt-1">
-                {validationError}
-              </p>
+              <p className="text-xs text-red-500 mt-1">{validationError}</p>
             )}
 
             <div className="grid grid-cols-2 gap-2">
@@ -248,8 +262,8 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
                 disabled={newName === exercise.name}
                 className={`w-full px-4 py-2 rounded-lg text-sm ${
                   newName === exercise.name
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-orange-500 text-white hover:bg-orange-600"
                 } transition-colors`}
               >
                 Update
@@ -259,7 +273,9 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
         ) : (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900">{exercise.name}</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                {exercise.name}
+              </h3>
               <button
                 onClick={handleEditClick}
                 className="p-1 rounded-lg hover:bg-orange-50 text-orange-500 transition-colors"
@@ -314,13 +330,23 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <Link 
+          <Link
             href={`/dashboard/workout-programs/${workoutId}/exercise/${exercise.id}`}
             className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
           >
-              Sets
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            Sets
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </Link>
 
@@ -328,8 +354,18 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
             href={`/dashboard/workout-programs/${workoutId}/exercise/${exercise.id}/history`}
             className="px-6 py-2.5 bg-white border border-orange-200 hover:bg-orange-50 text-orange-600 font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             History
           </Link>
@@ -343,17 +379,23 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/workout-programs/${workoutId}/exercise/${exercise.id}/analytics/week`}>
+                <Link
+                  href={`/dashboard/workout-programs/${workoutId}/exercise/${exercise.id}/analytics/week`}
+                >
                   This Week
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/workout-programs/${workoutId}/exercise/${exercise.id}/analytics/month`}>
+                <Link
+                  href={`/dashboard/workout-programs/${workoutId}/exercise/${exercise.id}/analytics/month`}
+                >
                   This Month
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/workout-programs/${workoutId}/exercise/${exercise.id}/analytics/year`}>
+                <Link
+                  href={`/dashboard/workout-programs/${workoutId}/exercise/${exercise.id}/analytics/year`}
+                >
                   This Year
                 </Link>
               </DropdownMenuItem>
@@ -370,9 +412,10 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
               Confirm Update
             </Dialog.Title>
             <Dialog.Description className="text-gray-600 mb-6">
-              Are you sure you want to rename this exercise from "{exercise.name}" to "{newName}"?
+              Are you sure you want to rename this exercise from "
+              {exercise.name}" to "{newName}"?
             </Dialog.Description>
-            
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowUpdateModal(false)}
@@ -409,14 +452,21 @@ const ExerciseCard = ({ exercise, workoutId }: { exercise: Exercise; workoutId: 
   );
 };
 
-// Update the ErrorState component to match EmptyState design
-const ErrorState = ({ error, onRetry }: { error: Error; onRetry: () => void }) => (
+const ErrorState = ({
+  error,
+  onRetry,
+}: {
+  error: Error;
+  onRetry: () => void;
+}) => (
   <div className="min-h-[68vh] flex items-center justify-center p-4">
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-md w-full">
       <div className="bg-red-50 rounded-full p-6 mb-6">
         <AlertCircle className="w-12 h-12 text-red-500" />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">Failed to Load Exercise Data</h3>
+      <h3 className="text-xl font-bold text-gray-900 mb-2">
+        Failed to Load Exercise Data
+      </h3>
       <p className="text-gray-600 mb-6">
         {error.message || "Something went wrong while fetching exercises"}
       </p>
@@ -431,16 +481,15 @@ const ErrorState = ({ error, onRetry }: { error: Error; onRetry: () => void }) =
   </div>
 );
 
-// Add DeleteConfirmationModal component
-const DeleteConfirmationModal = ({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  isDeleting 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  onConfirm: () => void; 
+const DeleteConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  isDeleting,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
   isDeleting: boolean;
 }) => (
   <Dialog.Root open={isOpen} onOpenChange={onClose}>
@@ -451,9 +500,10 @@ const DeleteConfirmationModal = ({
           Confirm Deletion
         </Dialog.Title>
         <Dialog.Description className="text-gray-600 mb-6">
-          Are you sure you want to delete this exercise? This action cannot be undone.
+          Are you sure you want to delete this exercise? This action cannot be
+          undone.
         </Dialog.Description>
-        
+
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -492,13 +542,12 @@ export default function ExercisesPage() {
     null
   );
 
-  // 1. Fetch workout program details
   const {
     data: workout,
     isLoading: isWorkoutLoading,
     isError: isWorkoutError,
     error: workoutError,
-    refetch: refetchWorkout
+    refetch: refetchWorkout,
   } = useQuery<WorkoutProgram>({
     queryKey: ["workout", params.id],
     queryFn: async () => {
@@ -512,13 +561,12 @@ export default function ExercisesPage() {
     retry: 2,
   });
 
-  // 2. Fetch exercises for active muscle group
   const {
     data: exercises,
     isLoading: isExercisesLoading,
     isError: isExercisesError,
     error: exercisesError,
-    refetch: refetchExercises
+    refetch: refetchExercises,
   } = useQuery({
     queryKey: ["exercises", params.id, activeMuscleGroupId, "list"],
     queryFn: async () => {
@@ -526,10 +574,10 @@ export default function ExercisesPage() {
       const res = await fetch(
         `/api/v1/exercises/${workout?.id}/${activeMuscleGroupId}`,
         {
-          cache: 'no-store',
+          cache: "no-store",
           headers: {
-            'Cache-Control': 'no-cache'
-          }
+            "Cache-Control": "no-cache",
+          },
         }
       );
       const data = await res.json();
@@ -540,18 +588,16 @@ export default function ExercisesPage() {
     },
     enabled: !!activeMuscleGroupId,
     retry: 2,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
-  // Add an effect to refetch when the component mounts or muscle group changes
   useEffect(() => {
     if (activeMuscleGroupId) {
       refetchExercises();
     }
   }, [activeMuscleGroupId, refetchExercises]);
 
-  // 3. Set initial active tab when workout data loads
   useEffect(() => {
     if (workout && workout.muscleGroups && workout.muscleGroups.length > 0) {
       const firstMuscleGroup = workout.muscleGroups[0];
@@ -559,7 +605,6 @@ export default function ExercisesPage() {
       setActiveMuscleGroupId(firstMuscleGroup.id);
     }
   }, [workout]);
-
 
   if (isWorkoutLoading) {
     return (
@@ -586,7 +631,8 @@ export default function ExercisesPage() {
             Failed to load workout program
           </h2>
           <p className="text-gray-600 mb-6">
-            {workoutError?.message || "There was an error loading your workout program"}
+            {workoutError?.message ||
+              "There was an error loading your workout program"}
           </p>
           <div className="flex items-center justify-center gap-3">
             <button
@@ -620,9 +666,9 @@ export default function ExercisesPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
         </div>
-        
-        <ErrorState 
-          error={exercisesError as Error} 
+
+        <ErrorState
+          error={exercisesError as Error}
           onRetry={() => refetchExercises()}
         />
       </div>
@@ -693,10 +739,10 @@ export default function ExercisesPage() {
               </Link>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {exercises?.map((exercise:any) => (
-                <ExerciseCard 
-                  key={exercise.id} 
-                  exercise={exercise} 
+              {exercises?.map((exercise: any) => (
+                <ExerciseCard
+                  key={exercise.id}
+                  exercise={exercise}
                   workoutId={workout.id.toString()}
                 />
               ))}

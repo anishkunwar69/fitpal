@@ -18,7 +18,6 @@ export async function GET(request: NextRequest, params: { params: { exerciseId: 
     const { exerciseId, date } = await params.params;
     const parsedIncomingDate = parse(date, 'yyyy-MM-dd', new Date());
 
-    // Fetch exercise with sets and verify ownership
     const exercise = await prisma.exercise.findFirst({
       where: {
         id: Number(exerciseId),

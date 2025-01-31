@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   CategoryScale,
   Chart as ChartJS,
+  ChartOptions,
   Filler,
   Legend,
   LineElement,
@@ -11,15 +12,21 @@ import {
   PointElement,
   Title,
   Tooltip,
-  ChartOptions
-} from 'chart.js';
-import { AlertCircle, ArrowDownIcon, ArrowLeft, ArrowUpIcon, Calendar, Dumbbell, Loader2, MinusIcon, Target, TrendingUp, RefreshCcw } from "lucide-react";
+} from "chart.js";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Calendar,
+  Dumbbell,
+  Loader2,
+  RefreshCcw,
+  Target,
+  TrendingUp
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { Line } from "react-chartjs-2";
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
+import "react-circular-progressbar/dist/styles.css";
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -31,7 +38,6 @@ ChartJS.register(
   Filler
 );
 
-// Loading Component
 const LoadingState = () => (
   <div className="min-h-[90vh] flex items-center justify-center p-4">
     <div className="flex flex-col items-center justify-center py-8 px-4 text-center w-full max-w-[320px] sm:max-w-[400px]">
@@ -48,57 +54,29 @@ const LoadingState = () => (
   </div>
 );
 
-// Error Component
-const ErrorState = ({ 
-  error, 
-  onRetry, 
-  router 
-}: { 
-  error: Error; 
-  onRetry: () => void;
-  router: any; // Using any for now, but you could use Router type from next/navigation
+const StatsCard = ({
+  icon: Icon,
+  title,
+  value,
+  trend,
+}: {
+  icon: any;
+  title: string;
+  value: string;
+  trend?: number;
 }) => (
-  <div className="min-h-[90vh] flex items-center justify-center p-4">
-    <div className="flex flex-col items-center justify-center py-8 px-4 text-center w-full max-w-[320px] sm:max-w-[400px]">
-      <div className="bg-red-50 rounded-full p-4 sm:p-6 mb-4 sm:mb-6">
-        <AlertCircle className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" />
-      </div>
-      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">
-        Failed to Load Analytics
-      </h3>
-      <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
-        {error.message || "Something went wrong while fetching analytics details"}
-      </p>
-      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-        <button
-          onClick={onRetry}
-          className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 rounded-xl bg-orange-500 text-white font-medium shadow-lg hover:bg-orange-600 transition-all duration-200"
-        >
-          <RefreshCcw className="w-4 h-4 mr-2" />
-          Try Again
-        </button>
-        <button
-          onClick={() => router.back()}
-          className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 rounded-xl border-2 border-orange-500 text-orange-500 font-medium hover:bg-orange-50 transition-all duration-200"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Go Back
-        </button>
-      </div>
-    </div>
-  </div>
-);
-
-// Stats Card Component
-const StatsCard = ({ icon: Icon, title, value, trend }: { icon: any, title: string, value: string, trend?: number }) => (
   <div className="bg-white rounded-xl p-4 sm:p-6 border border-orange-100 shadow-sm">
     <div className="flex items-start justify-between">
       <div>
         <p className="text-sm text-gray-600 mb-1">{title}</p>
         <p className="text-xl sm:text-2xl font-bold text-gray-900">{value}</p>
         {trend !== undefined && (
-          <p className={`text-xs sm:text-sm mt-1 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}% from previous period
+          <p
+            className={`text-xs sm:text-sm mt-1 ${
+              trend >= 0 ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {trend >= 0 ? "↑" : "↓"} {Math.abs(trend)}% from previous period
           </p>
         )}
       </div>
@@ -109,7 +87,6 @@ const StatsCard = ({ icon: Icon, title, value, trend }: { icon: any, title: stri
   </div>
 );
 
-// Update type definitions to match API response
 type Set = {
   id: number;
   weight: number;
@@ -122,7 +99,6 @@ type Set = {
   };
 };
 
-// Group sets by date for analytics
 const groupSetsByDate = (sets: Set[]) => {
   const grouped = sets.reduce((acc, set) => {
     const date = new Date(set.createdAt).toLocaleDateString();
@@ -135,140 +111,57 @@ const groupSetsByDate = (sets: Set[]) => {
 
   return Object.entries(grouped).map(([date, sets]) => ({
     createdAt: date,
-    sets: sets
+    sets: sets,
   }));
 };
 
-// Add new Stats Card for Rep Achievement
-const RepAchievementCard = ({ achieved, target }: { achieved: number; target: number }) => {
-  const percentage = Math.round((achieved / target) * 100);
-  return (
-    <div className="bg-white rounded-xl p-6 border border-orange-100 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Rep Achievement</p>
-          <div className="flex items-baseline gap-1">
-            <p className="text-2xl font-bold text-gray-900">{percentage}%</p>
-            <p className="text-sm text-gray-600">of target</p>
-          </div>
-          <p className="text-sm mt-1 text-gray-600">
-            {achieved}/{target} reps
-          </p>
-        </div>
-        <div className="relative h-16 w-16">
-          <svg className="transform -rotate-90" viewBox="0 0 36 36">
-            <path
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              fill="none"
-              stroke="#FEE2E2"
-              strokeWidth="3"
-            />
-            <path
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              fill="none"
-              stroke="#F97316"
-              strokeWidth="3"
-              strokeDasharray={`${percentage}, 100`}
-            />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Add new Performance Gauge Component
-const PerformanceGauge = ({ value, title, subtitle, color }: { 
-  value: number; 
-  title: string; 
-  subtitle: string;
-  color: string;
-}) => (
-  <div className="bg-white rounded-xl p-6 border border-orange-100 shadow-sm">
-    <div className="flex items-center gap-6">
-      <div style={{ width: 100, height: 100 }}>
-        <CircularProgressbar
-          value={value}
-          maxValue={100}
-          text={`${Math.round(value)}%`}
-          styles={buildStyles({
-            pathColor: color,
-            textColor: 'rgb(17, 24, 39)',
-            trailColor: '#fee2e2',
-          })}
-        />
-      </div>
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        <p className="text-sm text-gray-600">{subtitle}</p>
-      </div>
-    </div>
-  </div>
-);
-
-// Add new Progress Indicator Component
-const ProgressIndicator = ({ current, previous, label }: {
-  current: number;
-  previous: number;
-  label: string;
-}) => {
-  const difference = current - previous;
-  const percentageChange = previous !== 0 ? (difference / previous) * 100 : 0;
-  
-  return (
-    <div className="bg-white rounded-xl p-6 border border-orange-100 shadow-sm">
-      <div className="flex justify-between items-start mb-4">
-        <p className="text-sm text-gray-600">{label}</p>
-        <div className={`flex items-center gap-1 ${
-          difference > 0 ? 'text-green-600' : difference < 0 ? 'text-red-600' : 'text-gray-600'
-        }`}>
-          {difference > 0 ? <ArrowUpIcon className="w-4 h-4" /> : 
-           difference < 0 ? <ArrowDownIcon className="w-4 h-4" /> : 
-           <MinusIcon className="w-4 h-4" />}
-          <span className="text-sm font-medium">
-            {Math.abs(percentageChange).toFixed(1)}%
-          </span>
-        </div>
-      </div>
-      <div className="text-2xl font-bold text-gray-900">{current.toFixed(1)}</div>
-    </div>
-  );
-};
-
-// Add new Milestone Card Component
 const MilestoneCard = ({ sets }: { sets: Set[] }) => {
   const personalBests = {
-    weight: Math.max(...sets.map(s => s.weight)),
-    reps: Math.max(...sets.map(s => s.reps)),
-    volume: Math.max(...sets.map(s => s.weight * s.reps))
+    weight: Math.max(...sets.map((s) => s.weight)),
+    reps: Math.max(...sets.map((s) => s.reps)),
+    volume: Math.max(...sets.map((s) => s.weight * s.reps)),
   };
 
-  const recentRecords = sets.slice(-5).filter(set => 
-    set.weight === personalBests.weight || 
-    set.reps === personalBests.reps ||
-    set.weight * set.reps === personalBests.volume
-  );
+  const recentRecords = sets
+    .slice(-5)
+    .filter(
+      (set) =>
+        set.weight === personalBests.weight ||
+        set.reps === personalBests.reps ||
+        set.weight * set.reps === personalBests.volume
+    );
 
   return (
     <div className="bg-white rounded-xl p-6 border border-orange-100 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">🏆 Personal Bests</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        🏆 Personal Bests
+      </h3>
       <div className="space-y-4">
         <div>
           <p className="text-sm text-gray-600">Heaviest Weight</p>
-          <p className="text-xl font-bold text-gray-900">{personalBests.weight} kg</p>
+          <p className="text-xl font-bold text-gray-900">
+            {personalBests.weight} kg
+          </p>
         </div>
         <div>
           <p className="text-sm text-gray-600">Most Reps in One Set</p>
-          <p className="text-xl font-bold text-gray-900">{personalBests.reps} reps</p>
+          <p className="text-xl font-bold text-gray-900">
+            {personalBests.reps} reps
+          </p>
         </div>
         <div>
-          <p className="text-sm text-gray-600">Highest Volume in One Set (kg × reps)</p>
-          <p className="text-xl font-bold text-gray-900">{personalBests.volume} kg</p>
+          <p className="text-sm text-gray-600">
+            Highest Volume in One Set (kg × reps)
+          </p>
+          <p className="text-xl font-bold text-gray-900">
+            {personalBests.volume} kg
+          </p>
         </div>
         {recentRecords.length > 0 && (
           <div className="mt-4 pt-4 border-t border-orange-100">
             <p className="text-sm font-medium text-green-600">
-              🎉 You've hit {recentRecords.length} new record{recentRecords.length > 1 ? 's' : ''} in your last 5 sets!
+              🎉 You've hit {recentRecords.length} new record
+              {recentRecords.length > 1 ? "s" : ""} in your last 5 sets!
             </p>
           </div>
         )}
@@ -277,15 +170,22 @@ const MilestoneCard = ({ sets }: { sets: Set[] }) => {
   );
 };
 
-// Add new Consistency Card Component
-const ConsistencyCard = ({ data }: { data: { createdAt: string; sets: Set[] }[] }) => {
-  const workoutDays = new Set(data.map(d => new Date(d.createdAt).toDateString())).size;
+const ConsistencyCard = ({
+  data,
+}: {
+  data: { createdAt: string; sets: Set[] }[];
+}) => {
+  const workoutDays = new Set(
+    data.map((d) => new Date(d.createdAt).toDateString())
+  ).size;
   const totalSets = data.reduce((acc, d) => acc + d.sets.length, 0);
   const averageSetsPerWorkout = totalSets / (workoutDays || 1);
-  
+
   return (
     <div className="bg-white rounded-xl p-6 border border-orange-100 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">💪 Consistency Tracker</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        💪 Consistency Tracker
+      </h3>
       <div className="space-y-4">
         <div>
           <p className="text-sm text-gray-600">Workout Days</p>
@@ -297,18 +197,23 @@ const ConsistencyCard = ({ data }: { data: { createdAt: string; sets: Set[] }[] 
         </div>
         <div>
           <p className="text-sm text-gray-600">Average Sets per Workout</p>
-          <p className="text-xl font-bold text-gray-900">{averageSetsPerWorkout.toFixed(1)} sets</p>
+          <p className="text-xl font-bold text-gray-900">
+            {averageSetsPerWorkout.toFixed(1)} sets
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
-// Add Achievement Badge Component
-const AchievementBadge = ({ title, icon, description }: { 
-  title: string; 
-  icon: string; 
-  description: string 
+const AchievementBadge = ({
+  title,
+  icon,
+  description,
+}: {
+  title: string;
+  icon: string;
+  description: string;
 }) => (
   <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
     <span className="text-2xl">{icon}</span>
@@ -319,33 +224,40 @@ const AchievementBadge = ({ title, icon, description }: {
   </div>
 );
 
-// Add Motivation Card Component
-const MotivationCard = ({ data, sets }: { data: { createdAt: string; sets: Set[] }[]; sets: Set[] }) => {
+const MotivationCard = ({
+  data,
+  sets,
+}: {
+  data: { createdAt: string; sets: Set[] }[];
+  sets: Set[];
+}) => {
   const achievements = [];
   const totalSets = sets.length;
-  const totalWeight = sets.reduce((acc, set) => acc + (set.weight * set.reps), 0);
+  const totalWeight = sets.reduce((acc, set) => acc + set.weight * set.reps, 0);
 
-  // Calculate achievements
-  if (totalSets >= 100) achievements.push({
-    title: "Century Club",
-    icon: "🏆",
-    description: "Completed 100+ sets! Elite status achieved!"
-  });
+  if (totalSets >= 100)
+    achievements.push({
+      title: "Century Club",
+      icon: "🏆",
+      description: "Completed 100+ sets! Elite status achieved!",
+    });
 
-  if (totalWeight >= 10000) achievements.push({
-    title: "Heavy Lifter",
-    icon: "💪",
-    description: "Lifted over 10,000 kg in total! Incredible strength!"
-  });
+  if (totalWeight >= 10000)
+    achievements.push({
+      title: "Heavy Lifter",
+      icon: "💪",
+      description: "Lifted over 10,000 kg in total! Incredible strength!",
+    });
 
-  // Calculate fun equivalents
   const elephantWeight = 5000; // kg
   const elephantsLifted = (totalWeight / elephantWeight).toFixed(1);
-  
+
   return (
     <div className="bg-white rounded-xl p-6 border border-orange-100 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">🌟 Your Achievements</h3>
-      
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        🌟 Your Achievements
+      </h3>
+
       {achievements.length > 0 ? (
         <div className="space-y-3 mb-6">
           {achievements.map((achievement, index) => (
@@ -353,7 +265,9 @@ const MotivationCard = ({ data, sets }: { data: { createdAt: string; sets: Set[]
           ))}
         </div>
       ) : (
-        <p className="text-gray-600 mb-6">Keep working out to unlock achievements!</p>
+        <p className="text-gray-600 mb-6">
+          Keep working out to unlock achievements!
+        </p>
       )}
 
       <div className="border-t border-orange-100 pt-4">
@@ -363,7 +277,8 @@ const MotivationCard = ({ data, sets }: { data: { createdAt: string; sets: Set[]
             You've lifted the equivalent of {elephantsLifted} elephants! 🐘
           </p>
           <p className="text-sm text-gray-600">
-            Your dedication puts you in the top {Math.min(100, totalSets)}% of users! 🚀
+            Your dedication puts you in the top {Math.min(100, totalSets)}% of
+            users! 🚀
           </p>
         </div>
       </div>
@@ -371,21 +286,32 @@ const MotivationCard = ({ data, sets }: { data: { createdAt: string; sets: Set[]
   );
 };
 
-// Add Progress Insights Component
-const ProgressInsights = ({ data }: { data: { createdAt: string; sets: Set[] }[] }) => {
+const ProgressInsights = ({
+  data,
+}: {
+  data: { createdAt: string; sets: Set[] }[];
+}) => {
   const calculateProgress = () => {
     if (data.length < 2) return null;
-    
+
     const firstDay = data[0].sets;
     const lastDay = data[data.length - 1].sets;
-    
-    const firstAvgWeight = firstDay.reduce((acc, set) => acc + set.weight, 0) / firstDay.length;
-    const lastAvgWeight = lastDay.reduce((acc, set) => acc + set.weight, 0) / lastDay.length;
-    
+
+    const firstAvgWeight =
+      firstDay.reduce((acc, set) => acc + set.weight, 0) / firstDay.length;
+    const lastAvgWeight =
+      lastDay.reduce((acc, set) => acc + set.weight, 0) / lastDay.length;
+
     return {
-      weightIncrease: ((lastAvgWeight - firstAvgWeight) / firstAvgWeight * 100).toFixed(1),
-      timeSpan: Math.round((new Date(data[data.length - 1].createdAt).getTime() - 
-                           new Date(data[0].createdAt).getTime()) / (1000 * 60 * 60 * 24))
+      weightIncrease: (
+        ((lastAvgWeight - firstAvgWeight) / firstAvgWeight) *
+        100
+      ).toFixed(1),
+      timeSpan: Math.round(
+        (new Date(data[data.length - 1].createdAt).getTime() -
+          new Date(data[0].createdAt).getTime()) /
+          (1000 * 60 * 60 * 24)
+      ),
     };
   };
 
@@ -393,8 +319,10 @@ const ProgressInsights = ({ data }: { data: { createdAt: string; sets: Set[] }[]
 
   return (
     <div className="bg-white rounded-xl p-6 border border-orange-100 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">📈 Progress Insights</h3>
-      
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        📈 Progress Insights
+      </h3>
+
       {progress ? (
         <div className="space-y-4">
           <div>
@@ -402,15 +330,13 @@ const ProgressInsights = ({ data }: { data: { createdAt: string; sets: Set[] }[]
             <p className="text-2xl font-bold text-gray-900">
               {progress.weightIncrease}% increase
             </p>
-            <p className="text-sm text-gray-600">
-              in {progress.timeSpan} days
-            </p>
+            <p className="text-sm text-gray-600">in {progress.timeSpan} days</p>
           </div>
-          
+
           <div className="pt-4 border-t border-orange-100">
             <p className="text-sm font-medium text-orange-500">
-              {Number(progress.weightIncrease) > 10 
-                ? "🚀 Incredible progress! You're crushing it!" 
+              {Number(progress.weightIncrease) > 10
+                ? "🚀 Incredible progress! You're crushing it!"
                 : "💪 Steady progress! Keep pushing!"}
             </p>
           </div>
@@ -430,17 +356,21 @@ export default function Analytics() {
   const exerciseId = params?.exerciseId as string;
   const timeFrame = params?.timeFrame as string;
 
-  const { data, isLoading, isError, error, refetch } = useQuery<{ data: Set[]; message: string }>({
+  const { data, isLoading, isError, error, refetch } = useQuery<{
+    data: Set[];
+    message: string;
+  }>({
     queryKey: ["exercise-analytics", exerciseId, timeFrame],
     queryFn: async () => {
-      const response = await fetch(`/api/v1/exercises/details/time-frame/${timeFrame}/${exerciseId}`);
+      const response = await fetch(
+        `/api/v1/exercises/details/time-frame/${timeFrame}/${exerciseId}`
+      );
       const result = await response.json();
-      
+
       if (response.status === 404) {
-        // Return the result instead of throwing an error for 404
         return result;
       }
-      
+
       if (!result.success) {
         throw new Error(result.message);
       }
@@ -461,7 +391,9 @@ export default function Analytics() {
             Failed to Load Exercise Data
           </h3>
           <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
-            {error instanceof Error ? error.message : 'Something went wrong while fetching exercise details'}
+            {error instanceof Error
+              ? error.message
+              : "Something went wrong while fetching exercise details"}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <button
@@ -487,7 +419,6 @@ export default function Analytics() {
   if (!data?.data?.length) {
     return (
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
-        {/* Back Button */}
         <div className="mb-8">
           <button
             onClick={() => router.back()}
@@ -497,7 +428,6 @@ export default function Analytics() {
           </button>
         </div>
 
-        {/* No Data Message */}
         <div className="bg-white rounded-xl p-8 border border-orange-100 shadow-sm text-center">
           <div className="max-w-md mx-auto">
             <div className="bg-orange-50 rounded-full p-3 w-fit mx-auto mb-4">
@@ -507,7 +437,8 @@ export default function Analytics() {
               No Analytics Available
             </h2>
             <p className="text-gray-600 mb-6">
-              No exercise data found for the selected {timeFrame}. Complete some sets to see your analytics!
+              No exercise data found for the selected {timeFrame}. Complete some
+              sets to see your analytics!
             </p>
           </div>
         </div>
@@ -515,96 +446,94 @@ export default function Analytics() {
     );
   }
 
-  // Only proceed with analytics if we have data
   const groupedData = groupSetsByDate(data.data);
 
-  // Update chart data to use curved lines and simplified data
   const chartData = {
-    labels: groupedData.map(entry => entry.createdAt),
+    labels: groupedData.map((entry) => entry.createdAt),
     datasets: [
       {
-        label: 'Strength Progress',
-        data: groupedData.map(entry => ({
+        label: "Strength Progress",
+        data: groupedData.map((entry) => ({
           x: entry.createdAt,
-          y: entry.sets.reduce((acc, set) => acc + set.weight, 0) / entry.sets.length
+          y:
+            entry.sets.reduce((acc, set) => acc + set.weight, 0) /
+            entry.sets.length,
         })),
-        borderColor: 'rgb(249, 115, 22)',
-        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+        borderColor: "rgb(249, 115, 22)",
+        backgroundColor: "rgba(249, 115, 22, 0.1)",
         fill: true,
         tension: 0.4,
         pointRadius: 6,
-        pointHoverRadius: 8
-      }
-    ]
+        pointHoverRadius: 8,
+      },
+    ],
   };
 
-  // Update chart options with proper typing
-  const chartOptions: ChartOptions<'line'> = {
+  const chartOptions: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false
+        display: false,
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return `Average Weight: ${context.parsed.y.toFixed(1)} kg`;
-          }
+          },
         },
         padding: 12,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        titleColor: '#111827',
-        bodyColor: '#111827',
-        borderColor: '#FED7AA',
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        titleColor: "#111827",
+        bodyColor: "#111827",
+        borderColor: "#FED7AA",
         borderWidth: 1,
         titleFont: {
           size: 14,
-          weight: 500
+          weight: 500,
         },
         bodyFont: {
-          size: 13
+          size: 13,
         },
-        displayColors: false
-      }
+        displayColors: false,
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Average Weight (kg)',
+          text: "Average Weight (kg)",
           font: {
             size: 12,
-            weight: 500
-          }
+            weight: 500,
+          },
         },
         ticks: {
           font: {
-            size: 11
-          }
-        }
+            size: 11,
+          },
+        },
       },
       x: {
         ticks: {
           maxRotation: 45,
           minRotation: 45,
           font: {
-            size: 11
-          }
-        }
-      }
+            size: 11,
+          },
+        },
+      },
     },
     interaction: {
-      mode: 'nearest' as const,
-      axis: 'x' as const,
-      intersect: false
-    }
+      mode: "nearest" as const,
+      axis: "x" as const,
+      intersect: false,
+    },
   };
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
-      {/* Header */}
       <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <button
           onClick={() => router.back()}
@@ -613,28 +542,42 @@ export default function Analytics() {
           <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Exercise Analytics</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            Exercise Analytics
+          </h1>
           <p className="text-sm sm:text-base text-gray-600">
-            Viewing data for {timeFrame === 'week' ? 'this week' : timeFrame === 'month' ? 'this month' : 'this year'}
+            Viewing data for{" "}
+            {timeFrame === "week"
+              ? "this week"
+              : timeFrame === "month"
+              ? "this month"
+              : "this year"}
           </p>
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <StatsCard
           icon={Dumbbell}
           title="Average Weight"
-          value={`${groupedData.reduce((acc, entry) => 
-            acc + entry.sets.reduce((setAcc, set) => setAcc + set.weight, 0) / entry.sets.length, 0
-          ) / (groupedData.length || 1)} kg`}
+          value={`${
+            groupedData.reduce(
+              (acc, entry) =>
+                acc +
+                entry.sets.reduce((setAcc, set) => setAcc + set.weight, 0) /
+                  entry.sets.length,
+              0
+            ) / (groupedData.length || 1)
+          } kg`}
         />
         <StatsCard
           icon={TrendingUp}
           title="Max Weight"
-          value={`${Math.max(...groupedData.flatMap(entry => 
-            entry.sets.map(set => set.weight)
-          ))} kg`}
+          value={`${Math.max(
+            ...groupedData.flatMap((entry) =>
+              entry.sets.map((set) => set.weight)
+            )
+          )} kg`}
         />
         <StatsCard
           icon={Calendar}
@@ -643,28 +586,22 @@ export default function Analytics() {
         />
       </div>
 
-      {/* Motivation and Progress Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <MotivationCard data={groupedData} sets={data?.data || []} />
         <ProgressInsights data={groupedData} />
       </div>
 
-      {/* Milestones and Consistency */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <MilestoneCard sets={data?.data || []} />
         <ConsistencyCard data={groupedData} />
       </div>
 
-      {/* Chart Section */}
       <div className="bg-white p-4 sm:p-6 rounded-xl border border-orange-100 shadow-sm">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
           Strength Progress Timeline
         </h2>
-        <div className="h-[300px] sm:h-[400px]"> {/* Fixed height container for chart */}
-          <Line 
-            data={chartData} 
-            options={chartOptions} 
-          />
+        <div className="h-[300px] sm:h-[400px]">
+          <Line data={chartData} options={chartOptions} />
         </div>
       </div>
     </div>

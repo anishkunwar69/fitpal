@@ -40,7 +40,6 @@ interface ApiResponse {
   data: Exercise
 }
 
-// Add schema
 const setSchema = z.object({
   weight: z.number().min(0, "Weight must be positive"),
   reps: z.number().min(1, "At least one rep required"),
@@ -99,7 +98,6 @@ export default function ExerciseDetails() {
     },
   });
 
-  // Memoize calculations
   const { exercise, completedSets, progressPercentage } = useMemo(() => {
     const exercise = data?.data
     const completedSets = exercise?.sets?.length || 0
@@ -107,7 +105,6 @@ export default function ExerciseDetails() {
     return { exercise, completedSets, progressPercentage }
   }, [data?.data])
 
-  // Optimize form submission
   const onSubmit = useCallback((data: SetFormData) => {
     addSetMutation.mutate(data)
   }, [addSetMutation])
@@ -164,7 +161,6 @@ export default function ExerciseDetails() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Add back button */}
       <div className="mb-8">
         <button
           onClick={() => window.history.back()}
@@ -174,7 +170,6 @@ export default function ExerciseDetails() {
         </button>
       </div>
 
-      {/* Exercise Header */}
       <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -195,7 +190,6 @@ export default function ExerciseDetails() {
         )}
       </div>
 
-      {/* Progress and Stats */}
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="relative w-32 h-32 mx-auto">
@@ -246,7 +240,6 @@ export default function ExerciseDetails() {
         </div>
       </div>
 
-      {/* Progress Warning/Note */}
       {exercise && completedSets < exercise.targetSets && (
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3">
           <div className="min-w-5 mt-0.5">
@@ -290,7 +283,6 @@ export default function ExerciseDetails() {
         </div>
       )}
 
-      {/* Add Set Button or View Reports */}
       {completedSets < (exercise?.targetSets || 0) ? (
         <div className="space-y-4">
           <button 
@@ -395,13 +387,11 @@ export default function ExerciseDetails() {
         </div>
       )}
 
-      {/* Set History */}
       <div className="mt-8">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Set History</h2>
           {exercise?.sets && exercise.sets.length > 0 ? (
             <div className="space-y-4">
-              {/* Today's sets message */}
               {exercise.sets.some(set => {
                 const setDate = new Date(set.createdAt).toDateString();
                 const today = new Date().toDateString();

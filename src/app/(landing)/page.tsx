@@ -31,7 +31,6 @@ export default async function Home() {
   return (
     <>
       <section className="relative flex min-h-[calc(100vh-4rem)] bg-gradient-to-b from-orange-50 to-white">
-        {/* Decorative elements */}
         <div
           aria-hidden="true"
           className="absolute inset-0 overflow-hidden pointer-events-none"

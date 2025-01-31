@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, memo } from 'react';
+import { useMemo, memo } from "react";
 import {
   Loader2,
   TrendingUp,
@@ -30,8 +30,6 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import Link from "next/link";
-
-// Add interfaces for type safety
 interface ExerciseSet {
   reps: number | null;
   weight: number | null;
@@ -55,8 +53,6 @@ interface Metrics {
   avgWeight: number;
   estimatedOneRepMax: number;
 }
-
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -65,8 +61,6 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-
-// Memoize the ChartJS registration to prevent re-registration
 const registerChartComponents = () => {
   ChartJS.register(
     CategoryScale,
@@ -78,58 +72,49 @@ const registerChartComponents = () => {
   );
 };
 registerChartComponents();
-
-// Memoized chart component
 const MemoizedBar = memo(Bar);
+const SetAnalysis = memo(
+  ({ set, index }: { set: ChartDataPoint; index: number }) => {
+    const targetAvg = (set.minReps + set.maxReps) / 2;
+    const completionRate = Math.round((set.actualReps / targetAvg) * 100);
+    const barWidth = `${Math.min(completionRate, 100)}%`;
 
-// Memoized set analysis component
-const SetAnalysis = memo(({ set, index }: { set: ChartDataPoint; index: number }) => {
-  const targetAvg = (set.minReps + set.maxReps) / 2;
-  const completionRate = Math.round((set.actualReps / targetAvg) * 100);
-  const barWidth = `${Math.min(completionRate, 100)}%`;
-
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm font-medium">
-        <div className="space-y-0.5">
-          <span className="text-gray-700 block">
-            Set {index + 1}
-          </span>
-          <span className="text-xs text-gray-500">
-            {set.date} - {set.time}
-          </span>
-        </div>
-        <span className="text-orange-600 text-lg">
-          {completionRate}%
-        </span>
-      </div>
-      <div className="h-7 bg-orange-100 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-orange-500 rounded-full transition-all duration-500 relative"
-          style={{ width: barWidth }}
-        >
-          {completionRate >= 30 && (
-            <span className="absolute inset-0 flex items-center justify-center text-white text-sm font-medium">
-              {set.actualReps} reps @ {set.weight}kg
+    return (
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm font-medium">
+          <div className="space-y-0.5">
+            <span className="text-gray-700 block">Set {index + 1}</span>
+            <span className="text-xs text-gray-500">
+              {set.date} - {set.time}
             </span>
-          )}
+          </div>
+          <span className="text-orange-600 text-lg">{completionRate}%</span>
+        </div>
+        <div className="h-7 bg-orange-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-orange-500 rounded-full transition-all duration-500 relative"
+            style={{ width: barWidth }}
+          >
+            {completionRate >= 30 && (
+              <span className="absolute inset-0 flex items-center justify-center text-white text-sm font-medium">
+                {set.actualReps} reps @ {set.weight}kg
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-between text-sm text-gray-600">
+          <span className="font-medium">
+            {completionRate < 30 && `${set.actualReps} reps @ ${set.weight}kg`}
+          </span>
+          <span>
+            Target range: {set.minReps}-{set.maxReps} reps
+          </span>
         </div>
       </div>
-      <div className="flex justify-between text-sm text-gray-600">
-        <span className="font-medium">
-          {completionRate < 30 &&
-            `${set.actualReps} reps @ ${set.weight}kg`}
-        </span>
-        <span>
-          Target range: {set.minReps}-{set.maxReps} reps
-        </span>
-      </div>
-    </div>
-  );
-});
-SetAnalysis.displayName = 'SetAnalysis';
-
-// Add the calculateMetrics function
+    );
+  }
+);
+SetAnalysis.displayName = "SetAnalysis";
 const calculateMetrics = (chartData: ChartDataPoint[]): Metrics => {
   if (chartData.length === 0) {
     return {
@@ -139,19 +124,21 @@ const calculateMetrics = (chartData: ChartDataPoint[]): Metrics => {
     };
   }
 
-  const totalVolume = chartData.reduce((acc: number, set: ChartDataPoint) => 
-    acc + (set.weight * set.actualReps), 0);
-  
-  const avgWeight = Math.round(
-    chartData.reduce((acc: number, set: ChartDataPoint) => acc + set.weight, 0) / 
-    chartData.length
+  const totalVolume = chartData.reduce(
+    (acc: number, set: ChartDataPoint) => acc + set.weight * set.actualReps,
+    0
   );
 
-  // Calculate estimated 1RM using Brzycki formula
-  const maxSet = chartData.reduce((max: ChartDataPoint, set: ChartDataPoint) => 
-    (set.weight * set.actualReps) > (max.weight * max.actualReps) ? set : max
+  const avgWeight = Math.round(
+    chartData.reduce(
+      (acc: number, set: ChartDataPoint) => acc + set.weight,
+      0
+    ) / chartData.length
   );
-  
+  const maxSet = chartData.reduce((max: ChartDataPoint, set: ChartDataPoint) =>
+    set.weight * set.actualReps > max.weight * max.actualReps ? set : max
+  );
+
   const estimatedOneRepMax = Math.round(
     maxSet.weight * (36 / (37 - maxSet.actualReps))
   );
@@ -167,8 +154,6 @@ export default function ExerciseAnalytics() {
   const params = useParams();
   const router = useRouter();
   const exerciseId = params.exerciseId as string;
-
-  // 1. Query hook
   const {
     data: exercise,
     isLoading,
@@ -184,27 +169,28 @@ export default function ExerciseAnalytics() {
       return data;
     },
   });
-
-  // 2. Memoized calculations
-  const chartData = useMemo(() => 
-    exercise?.data.sets.map((set: ExerciseSet, index: number) => ({
-      setNumber: `Set ${index + 1}`,
-      actualReps: set.reps || 0,
-      minReps: exercise.data.minReps,
-      maxReps: exercise.data.maxReps,
-      weight: set.weight === null ? 0 : parseFloat(set.weight.toString()),
-      date: new Date(set.createdAt).toLocaleDateString(),
-      time: new Date(set.createdAt).toLocaleTimeString(),
-      createdAt: set.createdAt,
-    })) ?? [],
+  const chartData = useMemo(
+    () =>
+      exercise?.data.sets.map((set: ExerciseSet, index: number) => ({
+        setNumber: `Set ${index + 1}`,
+        actualReps: set.reps || 0,
+        minReps: exercise.data.minReps,
+        maxReps: exercise.data.maxReps,
+        weight: set.weight === null ? 0 : parseFloat(set.weight.toString()),
+        date: new Date(set.createdAt).toLocaleDateString(),
+        time: new Date(set.createdAt).toLocaleTimeString(),
+        createdAt: set.createdAt,
+      })) ?? [],
     [exercise?.data.sets, exercise?.data.minReps, exercise?.data.maxReps]
   );
-
-  // 3. Derived calculations from chartData
   const metrics = useMemo(() => calculateMetrics(chartData), [chartData]);
 
-  const totalReps = useMemo(() => 
-    chartData.reduce((acc: number, set: ChartDataPoint) => acc + set.actualReps, 0),
+  const totalReps = useMemo(
+    () =>
+      chartData.reduce(
+        (acc: number, set: ChartDataPoint) => acc + set.actualReps,
+        0
+      ),
     [chartData]
   );
 
@@ -214,71 +200,74 @@ export default function ExerciseAnalytics() {
       (chartData.reduce((acc: number, set: ChartDataPoint) => {
         const targetAvg = (exercise.data.minReps + exercise.data.maxReps) / 2;
         return acc + set.actualReps / targetAvg;
-      }, 0) / chartData.length) * 100
+      }, 0) /
+        chartData.length) *
+        100
     );
   }, [chartData, exercise?.data]);
-
-  // 4. Chart configurations
-  const { weightProgressChartData, chartOptions } = useMemo(() => ({
-    weightProgressChartData: {
-      labels: chartData.map((set: ChartDataPoint) => set.setNumber),
-      datasets: [{
-        label: "Weight (kg)",
-        data: chartData.map((set: ChartDataPoint) => set.weight),
-        backgroundColor: "rgba(249, 115, 22, 0.8)",
-        borderColor: "rgb(249, 115, 22)",
-        borderWidth: 1,
-        borderRadius: 4,
-        maxBarThickness: 50,
-      }],
-    },
-    chartOptions: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false,
-        },
-        tooltip: {
-          callbacks: {
-            label: (context: any) => `Weight: ${context.parsed.y}kg`,
+  const { weightProgressChartData, chartOptions } = useMemo(
+    () => ({
+      weightProgressChartData: {
+        labels: chartData.map((set: ChartDataPoint) => set.setNumber),
+        datasets: [
+          {
+            label: "Weight (kg)",
+            data: chartData.map((set: ChartDataPoint) => set.weight),
+            backgroundColor: "rgba(249, 115, 22, 0.8)",
+            borderColor: "rgb(249, 115, 22)",
+            borderWidth: 1,
+            borderRadius: 4,
+            maxBarThickness: 50,
           },
-        },
+        ],
       },
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: "Weight (kg)",
-            color: "rgb(107, 114, 128)",
-            font: {
-              size: 12,
-            },
-          },
-          grid: {
-            display: true,
-            color: "rgba(0, 0, 0, 0.1)",
-          },
-        },
-        x: {
-          grid: {
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
             display: false,
           },
-          ticks: {
-            maxRotation: 45,
-            minRotation: 45,
+          tooltip: {
+            callbacks: {
+              label: (context: any) => `Weight: ${context.parsed.y}kg`,
+            },
           },
         },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Weight (kg)",
+              color: "rgb(107, 114, 128)",
+              font: {
+                size: 12,
+              },
+            },
+            grid: {
+              display: true,
+              color: "rgba(0, 0, 0, 0.1)",
+            },
+          },
+          x: {
+            grid: {
+              display: false,
+            },
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45,
+            },
+          },
+        },
+        animation: {
+          duration: 0,
+        },
+        devicePixelRatio: 2,
       },
-      animation: {
-        duration: 0
-      },
-      devicePixelRatio: 2,
-    }
-  }), [chartData]);
-
-  // Loading and error states
+    }),
+    [chartData]
+  );
   if (isLoading) {
     return (
       <div className="min-h-[90vh] flex items-center justify-center p-4">
@@ -304,7 +293,9 @@ export default function ExerciseAnalytics() {
           <div className="bg-red-50 rounded-full p-6 mb-6">
             <AlertCircle className="w-12 h-12 text-red-500" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Failed to Load Exercise Report</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Failed to Load Exercise Report
+          </h3>
           <p className="text-gray-600 mb-6">
             Something went wrong while fetching your exercise report
           </p>
@@ -340,16 +331,18 @@ export default function ExerciseAnalytics() {
         </button>
 
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">{exercise.data.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {exercise.data.name}
+          </h1>
           <p className="mt-1 text-gray-600">Exercise Report</p>
         </div>
       </div>
-
-      {/* Exercise Analysis Card */}
       <Card className="overflow-hidden">
         <CardHeader className="p-4 sm:p-6">
           <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-base sm:text-lg gap-2">
-            <span className="line-clamp-2">{exercise.data.name} - Set Analysis</span>
+            <span className="line-clamp-2">
+              {exercise.data.name} - Set Analysis
+            </span>
             <span className="text-xs sm:text-sm font-normal text-orange-500">
               Last updated:{" "}
               {new Date(
@@ -379,9 +372,7 @@ export default function ExerciseAnalytics() {
         </CardFooter>
       </Card>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {/* Session Overview Card */}
         <Card className="border-orange-100">
           <CardHeader className="pb-2 p-4">
             <CardTitle className="text-sm font-medium text-orange-900">
@@ -391,19 +382,25 @@ export default function ExerciseAnalytics() {
           <CardContent className="p-4">
             <div className="space-y-2.5">
               <div className="flex justify-between items-center">
-                <span className="text-xs sm:text-sm text-orange-600">Total Sets:</span>
+                <span className="text-xs sm:text-sm text-orange-600">
+                  Total Sets:
+                </span>
                 <span className="text-base sm:text-lg font-bold text-orange-700">
                   {chartData.length}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs sm:text-sm text-orange-600">Total Reps:</span>
+                <span className="text-xs sm:text-sm text-orange-600">
+                  Total Reps:
+                </span>
                 <span className="text-base sm:text-lg font-bold text-orange-700">
                   {totalReps}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs sm:text-sm text-orange-600">Volume:</span>
+                <span className="text-xs sm:text-sm text-orange-600">
+                  Volume:
+                </span>
                 <span className="text-base sm:text-lg font-bold text-orange-700">
                   {metrics.totalReps}kg
                 </span>
@@ -470,7 +467,6 @@ export default function ExerciseAnalytics() {
         </Card>
       </div>
 
-      {/* Compare Button */}
       <div className="flex justify-center mt-8 mb-8">
         <button
           onClick={() =>
@@ -485,7 +481,6 @@ export default function ExerciseAnalytics() {
         </button>
       </div>
 
-      {/* Weight Progress Chart Card */}
       <Card className="border-orange-100">
         <CardHeader className="p-4">
           <CardTitle className="text-sm font-medium text-orange-900">
@@ -497,8 +492,8 @@ export default function ExerciseAnalytics() {
         </CardHeader>
         <CardContent className="p-4">
           <div className="w-full h-[250px] sm:h-[300px] md:h-[400px]">
-            <MemoizedBar 
-              data={weightProgressChartData} 
+            <MemoizedBar
+              data={weightProgressChartData}
               options={{
                 ...chartOptions,
                 maintainAspectRatio: false,
@@ -511,19 +506,19 @@ export default function ExerciseAnalytics() {
                       maxRotation: 45,
                       minRotation: 45,
                       font: {
-                        size: window.innerWidth < 640 ? 10 : 12
-                      }
-                    }
+                        size: window.innerWidth < 640 ? 10 : 12,
+                      },
+                    },
                   },
                   y: {
                     ...chartOptions.scales.y,
                     ticks: {
                       font: {
-                        size: window.innerWidth < 640 ? 10 : 12
-                      }
-                    }
-                  }
-                }
+                        size: window.innerWidth < 640 ? 10 : 12,
+                      },
+                    },
+                  },
+                },
               }}
               redraw={false}
             />

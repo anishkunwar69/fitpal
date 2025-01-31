@@ -7,35 +7,43 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 type MuscleGroup = {
   id: number;
   name: string;
 };
 
-const exerciseSchema = z.object({
-  name: z.string().min(1, "Exercise name is required"),
-  notes: z.string().optional(),
-  targetSets: z.number().min(1, "At least one set is required"),
-  minReps: z.number().min(1, "Minimum reps required"),
-  maxReps: z.number().min(1, "Maximum reps required"),
-  unit: z.enum(["KG", "LBS"]),
-}).refine((data) => data.maxReps >= data.minReps, {
-  message: "Maximum reps must be greater than or equal to minimum reps",
-  path: ["maxReps"]
-});
+const exerciseSchema = z
+  .object({
+    name: z.string().min(1, "Exercise name is required"),
+    notes: z.string().optional(),
+    targetSets: z.number().min(1, "At least one set is required"),
+    minReps: z.number().min(1, "Minimum reps required"),
+    maxReps: z.number().min(1, "Maximum reps required"),
+    unit: z.enum(["KG", "LBS"]),
+  })
+  .refine((data) => data.maxReps >= data.minReps, {
+    message: "Maximum reps must be greater than or equal to minimum reps",
+    path: ["maxReps"],
+  });
 
 type ExerciseFormData = z.infer<typeof exerciseSchema>;
 
-// Memoize static form options
 const WEIGHT_UNIT_OPTIONS = [
-  { value: 'KG', label: 'Kilograms (kg)' },
-  { value: 'LBS', label: 'Pounds (lbs)' }
+  { value: "KG", label: "Kilograms (kg)" },
+  { value: "LBS", label: "Pounds (lbs)" },
 ] as const;
 
 const DEFAULT_FORM_VALUES = {
@@ -44,24 +52,25 @@ const DEFAULT_FORM_VALUES = {
   targetSets: 3,
   minReps: 8,
   maxReps: 12,
-  unit: "KG"
+  unit: "KG",
 } as const;
 
-// Optimize static components with memo
 const LoadingState = memo(() => (
   <div className="min-h-[90vh] flex items-center justify-center p-4">
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-md w-full">
       <div className="bg-orange-50 rounded-full p-6 mb-6">
         <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">Loading Workout Data</h3>
+      <h3 className="text-xl font-bold text-gray-900 mb-2">
+        Loading Workout Data
+      </h3>
       <p className="text-gray-600 mb-6">
         Please wait while we fetch the workout details
       </p>
     </div>
   </div>
 ));
-LoadingState.displayName = 'LoadingState';
+LoadingState.displayName = "LoadingState";
 
 const ErrorState = memo(() => (
   <div className="min-h-[68vh] flex items-center justify-center p-4">
@@ -69,7 +78,9 @@ const ErrorState = memo(() => (
       <div className="bg-red-50 rounded-full p-6 mb-6">
         <AlertCircle className="w-12 h-12 text-red-500" />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">Failed to Load Exercise Data</h3>
+      <h3 className="text-xl font-bold text-gray-900 mb-2">
+        Failed to Load Exercise Data
+      </h3>
       <p className="text-gray-600 mb-6">
         Something went wrong while fetching exercise details
       </p>
@@ -92,24 +103,29 @@ const ErrorState = memo(() => (
     </div>
   </div>
 ));
-ErrorState.displayName = 'ErrorState';
+ErrorState.displayName = "ErrorState";
 
 export default function AddExercises() {
   const router = useRouter();
   const params = useParams();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("");
-  const [activeMuscleGroupId, setActiveMuscleGroupId] = useState<number | null>(null);
+  const [activeMuscleGroupId, setActiveMuscleGroupId] = useState<number | null>(
+    null
+  );
 
-  // Pre-optimize form configuration
   const form = useForm<ExerciseFormData>({
     resolver: zodResolver(exerciseSchema),
     defaultValues: DEFAULT_FORM_VALUES,
-    mode: 'onChange' // Validate on change for better UX
+    mode: "onChange", // Validate on change for better UX
   });
 
-  // Optimize query with better caching and prefetching
-  const { data: workout, isLoading, isError, refetch } = useQuery({
+  const {
+    data: workout,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["workout", params.id],
     queryFn: async () => {
       const res = await fetch(`/api/v1/workout-program/${params.id}`);
@@ -122,8 +138,8 @@ export default function AddExercises() {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,
-    refetchOnWindowFocus: false, // Prevent unnecessary refetches
-    refetchOnReconnect: false
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   useEffect(() => {
@@ -133,13 +149,11 @@ export default function AddExercises() {
     }
   }, [workout]);
 
-  // Memoize handlers
   const handleMuscleGroupChange = useCallback((name: string, id: number) => {
     setActiveTab(name);
     setActiveMuscleGroupId(id);
   }, []);
 
-  // Optimize mutation with better error handling and optimistic updates
   const exerciseMutation = useMutation({
     mutationFn: async (data: ExerciseFormData) => {
       if (!activeMuscleGroupId) throw new Error("No muscle group selected");
@@ -147,58 +161,60 @@ export default function AddExercises() {
       const exerciseData = {
         ...data,
         muscleGroupId: activeMuscleGroupId,
-        workoutProgramId: Number(params.id)
+        workoutProgramId: Number(params.id),
       };
 
       const response = await fetch(`/api/v1/exercises/${params.id}/add`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(exerciseData),
       });
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to create exercise');
+        throw new Error(result.message || "Failed to create exercise");
       }
       return result;
     },
     onMutate: async (newExercise) => {
-      // Optimistic update
       await queryClient.cancelQueries({ queryKey: ["workout", params.id] });
       const previousWorkout = queryClient.getQueryData(["workout", params.id]);
       return { previousWorkout };
     },
     onError: (error: Error, _, context) => {
-      // Rollback on error
       if (context?.previousWorkout) {
-        queryClient.setQueryData(["workout", params.id], context.previousWorkout);
+        queryClient.setQueryData(
+          ["workout", params.id],
+          context.previousWorkout
+        );
       }
       toast.error(error.message || "Failed to add exercise", {
-        style: { width: '400px', maxWidth: '90vw' }
+        style: { width: "400px", maxWidth: "90vw" },
       });
     },
     onSuccess: () => {
       router.push(`/dashboard/workout-programs/${params.id}/exercises`);
       form.reset(DEFAULT_FORM_VALUES);
       toast.success("Exercise added successfully", {
-        style: { width: '400px', maxWidth: '90vw' }
+        style: { width: "400px", maxWidth: "90vw" },
       });
       queryClient.invalidateQueries({ queryKey: ["workout", params.id] });
-    }
+    },
   });
 
-  // Optimize form submission
-  const onSubmit = useCallback(async (data: ExerciseFormData) => {
-    if (!activeMuscleGroupId) {
-      toast.error("Please select a muscle group", {
-        style: { width: '400px', maxWidth: '90vw' }
-      });
-      return;
-    }
-    exerciseMutation.mutate(data);
-  }, [exerciseMutation, activeMuscleGroupId]);
+  const onSubmit = useCallback(
+    async (data: ExerciseFormData) => {
+      if (!activeMuscleGroupId) {
+        toast.error("Please select a muscle group", {
+          style: { width: "400px", maxWidth: "90vw" },
+        });
+        return;
+      }
+      exerciseMutation.mutate(data);
+    },
+    [exerciseMutation, activeMuscleGroupId]
+  );
 
-  // Memoize the back button handler
   const handleBack = useCallback(() => {
     router.back();
   }, [router]);
@@ -211,11 +227,9 @@ export default function AddExercises() {
     return <ErrorState />;
   }
 
-  // Mobile-optimized responsive styles
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8 min-h-screen">
-      {/* Back button - optimized for touch */}
-      <button 
+      <button
         onClick={handleBack}
         className="touch-manipulation inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg border border-orange-100/50 text-gray-600 hover:text-orange-500 transition-all duration-300 active:scale-95 mb-4 sm:mb-6"
         aria-label="Go back"
@@ -233,7 +247,6 @@ export default function AddExercises() {
           </p>
         </div>
 
-        {/* Muscle group tabs - optimized for touch and scroll */}
         <div className="mb-2">
           <label className="text-sm font-medium text-gray-700">
             Select Target Muscle Group
@@ -241,15 +254,17 @@ export default function AddExercises() {
         </div>
 
         <div className="border-b border-gray-200 overflow-x-auto scrollbar-hide -mx-3 px-3">
-          <nav 
-            className="-mb-px flex space-x-6 sm:space-x-8" 
+          <nav
+            className="-mb-px flex space-x-6 sm:space-x-8"
             aria-label="Tabs"
             role="tablist"
           >
             {workout?.muscleGroups?.map((muscleGroup: MuscleGroup) => (
               <button
                 key={muscleGroup.id}
-                onClick={() => handleMuscleGroupChange(muscleGroup.name, muscleGroup.id)}
+                onClick={() =>
+                  handleMuscleGroupChange(muscleGroup.name, muscleGroup.id)
+                }
                 role="tab"
                 aria-selected={activeTab === muscleGroup.name}
                 className={`
@@ -262,16 +277,16 @@ export default function AddExercises() {
                   }
                 `}
               >
-                {muscleGroup.name.charAt(0) + muscleGroup.name.slice(1).toLowerCase()}
+                {muscleGroup.name.charAt(0) +
+                  muscleGroup.name.slice(1).toLowerCase()}
               </button>
             ))}
           </nav>
         </div>
 
-        {/* Form with improved mobile input handling */}
         <Form {...form}>
-          <form 
-            onSubmit={form.handleSubmit(onSubmit)} 
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-5 sm:space-y-6"
             autoComplete="off"
           >
@@ -280,9 +295,11 @@ export default function AddExercises() {
               name="name"
               render={({ field }) => (
                 <FormItem className="space-y-1.5 sm:space-y-2">
-                  <FormLabel className="text-sm sm:text-base text-gray-700 font-medium">Exercise Name</FormLabel>
+                  <FormLabel className="text-sm sm:text-base text-gray-700 font-medium">
+                    Exercise Name
+                  </FormLabel>
                   <FormControl>
-                    <Input 
+                    <Input
                       {...field}
                       className="border-orange-100 focus:border-orange-500 focus:ring-orange-500/20 text-sm sm:text-base"
                     />
@@ -301,15 +318,20 @@ export default function AddExercises() {
                   render={({ field }) => (
                     <FormItem className="space-y-1.5 sm:space-y-2">
                       <FormLabel className="text-sm sm:text-base text-gray-700 font-medium">
-                        {fieldName === "targetSets" ? "Sets" : 
-                         fieldName === "minReps" ? "Minimum Reps" : "Maximum Reps"}
+                        {fieldName === "targetSets"
+                          ? "Sets"
+                          : fieldName === "minReps"
+                          ? "Minimum Reps"
+                          : "Maximum Reps"}
                       </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           min="1"
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                           className="border-orange-100 focus:border-orange-500 focus:ring-orange-500/20 text-sm sm:text-base"
                         />
                       </FormControl>
@@ -325,13 +347,15 @@ export default function AddExercises() {
               name="unit"
               render={({ field }) => (
                 <FormItem className="space-y-1.5 sm:space-y-2">
-                  <FormLabel className="text-sm sm:text-base text-gray-700 font-medium">Weight Unit</FormLabel>
+                  <FormLabel className="text-sm sm:text-base text-gray-700 font-medium">
+                    Weight Unit
+                  </FormLabel>
                   <FormControl>
                     <select
                       {...field}
                       className="mt-1 block w-full px-3 py-2 text-sm sm:text-base rounded-md border-orange-100 shadow-sm focus:border-orange-500 focus:ring-orange-500/20"
                     >
-                      {WEIGHT_UNIT_OPTIONS.map(option => (
+                      {WEIGHT_UNIT_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
@@ -348,7 +372,9 @@ export default function AddExercises() {
               name="notes"
               render={({ field }) => (
                 <FormItem className="space-y-1.5 sm:space-y-2">
-                  <FormLabel className="text-sm sm:text-base text-gray-700 font-medium">Notes (optional)</FormLabel>
+                  <FormLabel className="text-sm sm:text-base text-gray-700 font-medium">
+                    Notes (optional)
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -360,7 +386,6 @@ export default function AddExercises() {
               )}
             />
 
-            {/* Submit button - optimized for touch */}
             <button
               type="submit"
               disabled={exerciseMutation.isPending}
@@ -370,7 +395,11 @@ export default function AddExercises() {
                 shadow-lg hover:shadow-orange-500/25 transition-all duration-300 
                 transform active:scale-[0.98] flex justify-center items-center
                 text-base font-medium min-h-[56px]
-                ${exerciseMutation.isPending ? 'opacity-70 cursor-not-allowed' : ''}
+                ${
+                  exerciseMutation.isPending
+                    ? "opacity-70 cursor-not-allowed"
+                    : ""
+                }
               `}
             >
               {exerciseMutation.isPending ? (
@@ -387,4 +416,4 @@ export default function AddExercises() {
       </div>
     </div>
   );
-} 
+}

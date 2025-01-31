@@ -3,7 +3,6 @@ import prisma from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { endOfDay } from "date-fns";
 
-// this function will basically get details of a particular exercise
 export async function GET(
   request: NextRequest,
   context: { params: { exerciseId: string } }
@@ -32,7 +31,6 @@ export async function GET(
       );
     }
 
-    // Validate exerciseId
     const exerciseId = params?.exerciseId;
     if (!exerciseId || isNaN(Number(exerciseId))) {
       return NextResponse.json(
@@ -45,7 +43,7 @@ export async function GET(
       where: {
         id: Number(exerciseId),
         workoutProgram: {
-          userId: user.id, // Ensure the exercise belongs to user's workout program
+          userId: user.id,
         },
       },
       include: {
@@ -62,7 +60,7 @@ export async function GET(
             validUpto: { equals: endOfToday }
           },
           orderBy: {
-            createdAt: 'asc', // Ensure sets are ordered by creation time
+            createdAt: 'asc',
           },
           select: {
             id: true,
@@ -83,7 +81,6 @@ export async function GET(
       );
     }
 
-    // Transform the sets data to ensure proper date formatting
     const transformedExercise = {
       ...exercise,
       sets: exercise.sets.map(set => ({

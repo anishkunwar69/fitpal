@@ -29,7 +29,6 @@ export default function Dashboard() {
         <p className="text-gray-600 mt-2">Ready for another workout?</p>
       </div>
       
-      {/* Main Workout Programs Card */}
       <div className="mb-8">
         <Link
           href="/dashboard/workout-programs"
@@ -48,7 +47,6 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* Health Tips Section */}
       <div className="space-y-6">
         <h2 className="text-lg font-semibold text-gray-900">Health & Fitness Tips</h2>
         <div className="grid gap-6 md:grid-cols-3">
@@ -70,7 +68,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Daily Health Quote */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
           <p className="text-sm font-medium mb-2">💪 Daily Motivation</p>
           <p className="text-xl font-semibold">

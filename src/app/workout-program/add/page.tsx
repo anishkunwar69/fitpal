@@ -20,7 +20,7 @@ import { Dumbbell, Loader2, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/providers";
-import { memo } from 'react';
+import { memo } from "react";
 
 // Memoized constant arrays
 const workoutDays = [
@@ -42,7 +42,6 @@ const muscleGroups = [
   { label: "Legs", value: "LEGS" },
 ] as const;
 
-// Memoized form schema
 const formSchema = z.object({
   name: z.string().min(1, "Program name is required"),
   description: z.string().optional(),
@@ -50,7 +49,6 @@ const formSchema = z.object({
   muscleGroups: z.array(z.string()).min(1, "Select at least one muscle group"),
 });
 
-// Memoized components
 const BackButton = memo(({ onClick }: { onClick: () => void }) => (
   <button
     onClick={onClick}
@@ -77,38 +75,48 @@ const HeaderSection = memo(() => (
   </div>
 ));
 
-const CheckboxGroup = memo(({ items, field, name }: { 
-  items: readonly { label: string; value: string; }[];
-  field: any;
-  name: string;
-}) => (
-  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-    {items.map((item) => (
-      <FormItem
-        key={item.value}
-        className="flex items-center space-x-3 space-y-0"
-      >
-        <FormControl>
-          <Checkbox
-            checked={field.value?.includes(item.value)}
-            onCheckedChange={(checked) => {
-              const currentValues = field.value || [];
-              if (checked) {
-                field.onChange([...currentValues, item.value]);
-              } else {
-                field.onChange(currentValues.filter((value: string) => value !== item.value));
-              }
-            }}
-            className="border-orange-200 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
-          />
-        </FormControl>
-        <FormLabel className="text-sm font-medium text-gray-600 cursor-pointer">
-          {item.label}
-        </FormLabel>
-      </FormItem>
-    ))}
-  </div>
-));
+const CheckboxGroup = memo(
+  ({
+    items,
+    field,
+    name,
+  }: {
+    items: readonly { label: string; value: string }[];
+    field: any;
+    name: string;
+  }) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {items.map((item) => (
+        <FormItem
+          key={item.value}
+          className="flex items-center space-x-3 space-y-0"
+        >
+          <FormControl>
+            <Checkbox
+              checked={field.value?.includes(item.value)}
+              onCheckedChange={(checked) => {
+                const currentValues = field.value || [];
+                if (checked) {
+                  field.onChange([...currentValues, item.value]);
+                } else {
+                  field.onChange(
+                    currentValues.filter(
+                      (value: string) => value !== item.value
+                    )
+                  );
+                }
+              }}
+              className="border-orange-200 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+            />
+          </FormControl>
+          <FormLabel className="text-sm font-medium text-gray-600 cursor-pointer">
+            {item.label}
+          </FormLabel>
+        </FormItem>
+      ))}
+    </div>
+  )
+);
 
 export default function AddWorkout() {
   const router = useRouter();
@@ -131,7 +139,7 @@ export default function AddWorkout() {
       toast.success("Workout program created successfully!", {
         className: "w-[400px]",
         style: {
-          padding: '16px',
+          padding: "16px",
         },
       });
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
@@ -141,7 +149,7 @@ export default function AddWorkout() {
       toast.error(error.message, {
         className: "w-[400px]",
         style: {
-          padding: '16px',
+          padding: "16px",
         },
       });
     },
@@ -182,7 +190,6 @@ export default function AddWorkout() {
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-4 md:space-y-6"
                   >
-                    {/* Program Name Field with Enhanced Design */}
                     <FormField
                       control={form.control}
                       name="name"
@@ -203,7 +210,6 @@ export default function AddWorkout() {
                       )}
                     />
 
-                    {/* Description Field */}
                     <FormField
                       control={form.control}
                       name="description"
@@ -224,7 +230,6 @@ export default function AddWorkout() {
                       )}
                     />
 
-                    {/* Workout Days with Enhanced Grid Layout */}
                     <FormField
                       control={form.control}
                       name="workoutDays"
@@ -233,13 +238,16 @@ export default function AddWorkout() {
                           <FormLabel className="text-gray-700 font-medium">
                             Workout Days
                           </FormLabel>
-                          <CheckboxGroup items={workoutDays} field={field} name="workoutDays" />
+                          <CheckboxGroup
+                            items={workoutDays}
+                            field={field}
+                            name="workoutDays"
+                          />
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    {/* Muscle Groups with Enhanced Visual Design */}
                     <FormField
                       control={form.control}
                       name="muscleGroups"
@@ -248,13 +256,16 @@ export default function AddWorkout() {
                           <FormLabel className="text-gray-700 font-medium">
                             Target Muscle Groups
                           </FormLabel>
-                          <CheckboxGroup items={muscleGroups} field={field} name="muscleGroups" />
+                          <CheckboxGroup
+                            items={muscleGroups}
+                            field={field}
+                            name="muscleGroups"
+                          />
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    {/* Enhanced Submit Button with Adjusted Padding */}
                     <Button
                       type="submit"
                       className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-4 md:py-6 rounded-xl shadow-lg hover:shadow-orange-500/25 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] mt-6"

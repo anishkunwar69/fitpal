@@ -8,7 +8,6 @@ export async function GET(
   { params }: { params: { exerciseId: string } }
 ) {
   try {
-    // Auth check
     const { userId } = await auth();
     const userInfo = await currentUser();
 
@@ -35,7 +34,6 @@ export async function GET(
     const endOfToday = endOfDay(today);
     const startOfToday = startOfDay(today);
 
-    // First, get the exercise to check target sets
     const exercise = await prisma.exercise.findUnique({
       where: { id: Number(exerciseId) },
       select: { targetSets: true }
@@ -48,7 +46,6 @@ export async function GET(
       );
     }
 
-    // Get today's sets where count matches target sets
     const todaysSets = await prisma.set.findMany({
       where: {
         exerciseId: Number(exerciseId),
@@ -62,7 +59,6 @@ export async function GET(
       },
     });
 
-    // Group today's sets by createdAt date and filter groups with matching target sets
     const todaysSetGroups = todaysSets.reduce((acc: any, set) => {
       const date = set.createdAt.toISOString().split('T')[0];
       if (!acc[date]) acc[date] = [];
@@ -74,7 +70,6 @@ export async function GET(
       (group: any) => group.length === exercise.targetSets
     ) as any[];
 
-    // Get previous sets where count matches target sets
     const previousSets = await prisma.set.findMany({
       where: {
         exerciseId: Number(exerciseId),
@@ -87,7 +82,6 @@ export async function GET(
       },
     });
 
-    // Group previous sets by createdAt date and filter groups with matching target sets
     const previousSetGroups = previousSets.reduce((acc: any, set) => {
       const date = set.createdAt.toISOString().split('T')[0];
       if (!acc[date]) acc[date] = [];
@@ -109,7 +103,6 @@ export async function GET(
       );
     }
 
-    // Calculate statistics
     const calculateSetStats = (sets: any[]) => {
       if (sets.length === 0) return null;
       
@@ -126,7 +119,6 @@ export async function GET(
     const todayStats = calculateSetStats(validTodaysSets || []);
     const previousStats = calculateSetStats(validPreviousSets);
 
-    // Calculate improvements
     const improvements = todayStats && previousStats ? {
       volumeChange: ((todayStats.totalVolume - previousStats.totalVolume) / previousStats.totalVolume) * 100,
       weightChange: ((todayStats.avgWeight - previousStats.avgWeight) / previousStats.avgWeight) * 100,
