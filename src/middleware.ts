@@ -1,43 +1,27 @@
 import { clerkMiddleware } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
 
-export default clerkMiddleware(async(auth,req)=>{
-  // if(req.url.includes("/api/v1/")){
-  //   const authHeader = req.headers.get("authorization");
-  //   if(!authHeader){
-  //     return NextResponse.json(
-  //       {
-  //         message: "Missing authorization token",
-  //         success: false,
-  //       },
-  //       {
-  //         status: 401,
-  //       }
-  //     );
-  //   }
+export default clerkMiddleware((auth, req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+        'Access-Control-Max-Age': '86400',
+      },
+    })
+  }
 
-  //   const [bearer, token] = authHeader.split(" ");
-  //   if(bearer != "Bearer" || !token){
-  //     return NextResponse.json(
-  //       {
-  //         message: "Invalid token format. Bearer <TOKEN> format is needed",
-  //         success: false,
-  //       },
-  //       {
-  //         status: 401,
-  //       }
-  //     ); 
-  //   }
+  // Add CORS headers to all responses
+  const response = NextResponse.next()
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
 
-  //   const requestHeaders = new Headers(req.headers);
-  //   requestHeaders.set("token",token);
-  //   return NextResponse.next({
-  //     request: {
-  //       headers: requestHeaders,
-  //     },
-  //   });
-  // }
-  // return NextResponse.next();
+  return response
 })
 
 export const config = {
